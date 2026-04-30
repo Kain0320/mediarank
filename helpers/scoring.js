@@ -99,4 +99,46 @@ function recalculate(mediaItem, reviews) {
   return mediaItem;
 }
 
-module.exports = { normalize, scoreToTier, recalculate };
+/**
+ * Přepočítá overallScore a overallTier seriálu z hodnocení epizod.
+ * Skóre sezóny = průměr epizod v té sezóně.
+ * Celkové skóre = průměr skóre sezón.
+ *
+ * @param {Object} mediaItem  – seriál (bude mutován)
+ * @param {Array}  episodes   – všechny epizody z DB
+ * @returns {{ mediaItem: Object, seasonScores: Object }}
+ */
+function recalculateFromEpisodes(mediaItem, episodes) {
+  const relevant = episodes.filter(e => e.mediaId === mediaItem.id);
+
+  if (relevant.length === 0) {
+    mediaItem.overallScore = null;
+    mediaItem.overallTier  = null;
+    return { mediaItem, seasonScores: {} };
+  }
+
+  // Seskup epizody podle čísla sezóny
+  const bySeasons = {};
+  relevant.forEach(ep => {
+    if (!bySeasons[ep.season]) bySeasons[ep.season] = [];
+    bySeasons[ep.season].push(ep.rating);
+  });
+
+  // Průměr každé sezóny
+  const seasonScores = {};
+  Object.entries(bySeasons).forEach(([season, ratings]) => {
+    const avg = ratings.reduce((s, r) => s + r, 0) / ratings.length;
+    seasonScores[Number(season)] = Math.round(avg * 10) / 10;
+  });
+
+  // Celkové skóre = průměr sezón
+  const seasonAvgs = Object.values(seasonScores);
+  const total = seasonAvgs.reduce((s, v) => s + v, 0) / seasonAvgs.length;
+
+  mediaItem.overallScore = Math.round(total * 10) / 10;
+  mediaItem.overallTier  = scoreToTier(total);
+
+  return { mediaItem, seasonScores };
+}
+
+module.exports = { normalize, scoreToTier, recalculate, recalculateFromEpisodes };

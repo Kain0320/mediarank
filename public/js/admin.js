@@ -62,6 +62,12 @@ function renderTable(items, token) {
   }
   items.forEach(item => {
     const tr = document.createElement("tr");
+    const episodesBtn = item.type === "Series"
+      ? `<button class="btn btn-sm btn-outline-primary me-1"
+           onclick="openEpisodesModal('${item.id}','${item.title}','${token}')">
+           <i class="bi bi-collection-play"></i> Epizody
+         </button>`
+      : "";
     tr.innerHTML = `
       <td>${item.title}</td>
       <td>${item.type}</td>
@@ -69,6 +75,7 @@ function renderTable(items, token) {
       <td>${item.overallScore ?? "—"}</td>
       <td>${item.overallTier  ?? "—"}</td>
       <td>
+        ${episodesBtn}
         <button class="btn btn-sm btn-outline-danger"
           onclick="deleteItem('${item.id}','${token}')">
           <i class="bi bi-trash"></i> Smazat
@@ -255,6 +262,127 @@ async function handleAdd() {
   } else {
     const err = await res.json();
     alert("Chyba: " + err.error);
+  }
+}
+
+// ── Správa epizod ─────────────────────────────────────────────
+let _epMediaId = null;
+let _epToken   = null;
+
+async function openEpisodesModal(mediaId, title, token) {
+  _epMediaId = mediaId;
+  _epToken   = token;
+  document.getElementById("episodesModalTitle").textContent = title;
+  document.getElementById("epError").classList.add("d-none");
+  await loadEpisodes();
+  new bootstrap.Modal(document.getElementById("episodesModal")).show();
+
+  document.getElementById("epAddBtn").onclick = handleAddEpisode;
+}
+
+async function loadEpisodes() {
+  const res  = await fetch(`/api/media/${_epMediaId}/episodes`);
+  const data = await res.json();
+  renderEpisodes(data);
+}
+
+function renderEpisodes(episodes) {
+  const container = document.getElementById("episodesList");
+
+  if (episodes.length === 0) {
+    container.innerHTML = `<p class="text-muted text-center py-3">Žádné epizody zatím nebyly hodnoceny.</p>`;
+    return;
+  }
+
+  // Seskup podle sezóny
+  const bySeasons = {};
+  episodes.forEach(ep => {
+    if (!bySeasons[ep.season]) bySeasons[ep.season] = [];
+    bySeasons[ep.season].push(ep);
+  });
+
+  container.innerHTML = "";
+  Object.keys(bySeasons).sort((a, b) => Number(a) - Number(b)).forEach(season => {
+    const eps = bySeasons[season].sort((a, b) => a.episode - b.episode);
+    const seasonAvg = (eps.reduce((s, e) => s + e.rating, 0) / eps.length).toFixed(1);
+
+    const section = document.createElement("div");
+    section.className = "mb-3";
+    section.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center bg-light rounded px-3 py-2 mb-2">
+        <strong>Sezóna ${season}</strong>
+        <span class="badge bg-primary">Průměr: ${seasonAvg} / 10</span>
+      </div>`;
+
+    eps.forEach(ep => {
+      const row = document.createElement("div");
+      row.className = "d-flex align-items-center gap-2 px-3 py-1 border-bottom";
+      row.innerHTML = `
+        <span class="text-muted" style="min-width:60px;">E${String(ep.episode).padStart(2,"0")}</span>
+        <span class="flex-grow-1">${ep.title || "<em class='text-muted'>bez názvu</em>"}</span>
+        <span class="badge bg-secondary">${ep.rating} / 10</span>
+        <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteEpisode('${ep.id}')">
+          <i class="bi bi-x-lg"></i>
+        </button>`;
+      section.appendChild(row);
+    });
+
+    container.appendChild(section);
+  });
+}
+
+async function handleAddEpisode() {
+  const season  = Number(document.getElementById("epSeason").value);
+  const episode = Number(document.getElementById("epNumber").value);
+  const rating  = Number(document.getElementById("epRating").value);
+  const title   = document.getElementById("epTitle").value.trim();
+  const errEl   = document.getElementById("epError");
+
+  if (!season || !episode || !rating) {
+    errEl.textContent = "Sezóna, epizoda a hodnocení jsou povinné.";
+    errEl.classList.remove("d-none");
+    return;
+  }
+  if (rating < 1 || rating > 10) {
+    errEl.textContent = "Hodnocení musí být 1–10.";
+    errEl.classList.remove("d-none");
+    return;
+  }
+
+  errEl.classList.add("d-none");
+
+  const res = await fetch(`/api/media/${_epMediaId}/episodes`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${_epToken}` },
+    body:    JSON.stringify({ season, episode, rating, title: title || null })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    errEl.textContent = err.error || "Chyba při ukládání.";
+    errEl.classList.remove("d-none");
+    return;
+  }
+
+  // Reset formuláře
+  document.getElementById("epRating").value = "";
+  document.getElementById("epTitle").value  = "";
+
+  await loadEpisodes();
+  loadAdminTable(_epToken); // obnov skóre v tabulce
+}
+
+async function deleteEpisode(epId) {
+  if (!confirm("Smazat toto hodnocení epizody?")) return;
+  const res = await fetch(`/api/media/${_epMediaId}/episodes/${epId}`, {
+    method:  "DELETE",
+    headers: { "Authorization": `Bearer ${_epToken}` }
+  });
+  if (res.ok) {
+    await loadEpisodes();
+    loadAdminTable(_epToken);
+  } else {
+    alert("Smazání se nezdařilo.");
   }
 }
 

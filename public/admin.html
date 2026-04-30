@@ -173,6 +173,53 @@
     </div>
   </div>
 
+  <!-- ── Modal: správa epizod seriálu ────────────────────── -->
+  <div class="modal fade" id="episodesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Epizody: <span id="episodesModalTitle"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Přidat epizodu -->
+          <div class="card mb-3">
+            <div class="card-body">
+              <h6 class="card-title mb-3">Přidat hodnocení epizody</h6>
+              <div class="row g-2 align-items-end">
+                <div class="col-2">
+                  <label class="form-label small">Sezóna *</label>
+                  <input type="number" class="form-control form-control-sm" id="epSeason" min="1" value="1" />
+                </div>
+                <div class="col-2">
+                  <label class="form-label small">Epizoda *</label>
+                  <input type="number" class="form-control form-control-sm" id="epNumber" min="1" value="1" />
+                </div>
+                <div class="col-2">
+                  <label class="form-label small">Hodnocení *</label>
+                  <input type="number" class="form-control form-control-sm" id="epRating" min="1" max="10" step="0.1" placeholder="1–10" />
+                </div>
+                <div class="col-4">
+                  <label class="form-label small">Název epizody</label>
+                  <input type="text" class="form-control form-control-sm" id="epTitle" placeholder="volitelné" />
+                </div>
+                <div class="col-2">
+                  <button class="btn btn-success btn-sm w-100" id="epAddBtn">
+                    <i class="bi bi-plus-lg"></i> Přidat
+                  </button>
+                </div>
+              </div>
+              <div id="epError" class="text-danger small mt-2 d-none"></div>
+            </div>
+          </div>
+
+          <!-- Seznam epizod -->
+          <div id="episodesList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/js/admin.js"></script>
 </body>

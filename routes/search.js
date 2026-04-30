@@ -17,6 +17,7 @@ const db           = require("../helpers/db");
 const { searchGames }  = require("../helpers/igdb");
 const { searchMedia }  = require("../helpers/tmdb");
 const { requireAdmin } = require("./auth");
+const { scoreToTier }  = require("../helpers/scoring");
 
 // ── GET /api/search ───────────────────────────────────────────
 router.get("/", async (req, res) => {
@@ -58,6 +59,7 @@ router.post("/import", requireAdmin, (req, res) => {
     return res.status(400).json({ error: "title a type jsou povinné" });
   }
 
+  const overallScore = rating ? Math.round(Number(rating) * 10) / 10 : null;
   const newItem = {
     id:           uuidv4(),
     title,
@@ -66,8 +68,8 @@ router.post("/import", requireAdmin, (req, res) => {
     summary:      summary || null,
     imageUrl:     imageUrl || null,
     year:         year || null,
-    overallScore: null,
-    overallTier:  null,
+    overallScore,
+    overallTier:  overallScore ? scoreToTier(overallScore) : null,
     createdAt:    new Date().toISOString()
   };
 
