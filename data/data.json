@@ -1,0 +1,171 @@
+{
+  "users": [
+    {
+      "id": "2f0b9fb7-e717-488f-91d1-55775fe27ddc",
+      "username": "Earth",
+      "password": "glebsupport96",
+      "role": "user",
+      "createdAt": "2026-04-29T12:43:28.137Z"
+    },
+    {
+      "id": "d264b5b8-6495-4a97-addf-2dfa0278a4e7",
+      "username": "Earthsd",
+      "password": "glebsupport96",
+      "role": "user",
+      "createdAt": "2026-04-29T13:18:56.106Z"
+    }
+  ],
+  "media": [
+    {
+      "id": "m001",
+      "title": "Inception",
+      "type": "Movie",
+      "genre": "Sci-Fi",
+      "imageUrl": "/images/movies/inception.jpg",
+      "overallScore": 9.1,
+      "overallTier": "S",
+      "createdAt": "2024-01-10T10:00:00.000Z"
+    },
+    {
+      "id": "m002",
+      "title": "The Dark Knight",
+      "type": "Movie",
+      "genre": "Action",
+      "imageUrl": "/images/movies/dark-knight.jpg",
+      "overallScore": 9.4,
+      "overallTier": "S",
+      "createdAt": "2024-01-11T10:00:00.000Z"
+    },
+    {
+      "id": "m003",
+      "title": "Interstellar",
+      "type": "Movie",
+      "genre": "Sci-Fi",
+      "imageUrl": "/images/movies/interstellar.jpg",
+      "overallScore": 8.6,
+      "overallTier": "S",
+      "createdAt": "2024-01-12T10:00:00.000Z"
+    },
+    {
+      "id": "m004",
+      "title": "The Matrix",
+      "type": "Movie",
+      "genre": "Sci-Fi",
+      "imageUrl": "/images/movies/matrix.jpg",
+      "overallScore": 7.2,
+      "overallTier": "A",
+      "createdAt": "2024-01-13T10:00:00.000Z"
+    },
+    {
+      "id": "m005",
+      "title": "John Wick",
+      "type": "Movie",
+      "genre": "Action",
+      "imageUrl": "/images/movies/john-wick.jpg",
+      "overallScore": 6.8,
+      "overallTier": "A",
+      "createdAt": "2024-01-14T10:00:00.000Z"
+    },
+    {
+      "id": "s001",
+      "title": "Breaking Bad",
+      "type": "Series",
+      "genre": "Drama",
+      "imageUrl": "/images/series/breaking-bad.jpg",
+      "overallScore": 9.7,
+      "overallTier": "S",
+      "createdAt": "2024-02-01T10:00:00.000Z"
+    },
+    {
+      "id": "s002",
+      "title": "Stranger Things",
+      "type": "Series",
+      "genre": "Sci-Fi",
+      "imageUrl": "/images/series/stranger-things.jpg",
+      "overallScore": 7.5,
+      "overallTier": "A",
+      "createdAt": "2024-02-02T10:00:00.000Z"
+    },
+    {
+      "id": "s003",
+      "title": "The Last of Us",
+      "type": "Series",
+      "genre": "Drama",
+      "imageUrl": "/images/series/last-of-us.jpg",
+      "overallScore": 8.8,
+      "overallTier": "S",
+      "createdAt": "2024-02-03T10:00:00.000Z"
+    },
+    {
+      "id": "s004",
+      "title": "Arcane",
+      "type": "Series",
+      "genre": "Animation",
+      "imageUrl": "/images/series/arcane.jpg",
+      "overallScore": 9,
+      "overallTier": "S",
+      "createdAt": "2024-02-04T10:00:00.000Z"
+    },
+    {
+      "id": "s005",
+      "title": "Dark",
+      "type": "Series",
+      "genre": "Mystery",
+      "imageUrl": "/images/series/dark.jpg",
+      "overallScore": 6.5,
+      "overallTier": "A",
+      "createdAt": "2024-02-05T10:00:00.000Z"
+    },
+    {
+      "id": "g001",
+      "title": "The Witcher 3",
+      "type": "Game",
+      "genre": "RPG",
+      "imageUrl": "/images/games/witcher3.jpg",
+      "overallScore": 9.5,
+      "overallTier": "S",
+      "createdAt": "2024-03-01T10:00:00.000Z"
+    },
+    {
+      "id": "g002",
+      "title": "Red Dead Redemption 2",
+      "type": "Game",
+      "genre": "Action-Adventure",
+      "imageUrl": "/images/games/rdr2.jpg",
+      "overallScore": 9.2,
+      "overallTier": "S",
+      "createdAt": "2024-03-02T10:00:00.000Z"
+    },
+    {
+      "id": "g003",
+      "title": "Elden Ring",
+      "type": "Game",
+      "genre": "Action RPG",
+      "imageUrl": "/images/games/elden-ring.jpg",
+      "overallScore": 8,
+      "overallTier": "S",
+      "createdAt": "2024-03-03T10:00:00.000Z"
+    },
+    {
+      "id": "g004",
+      "title": "Cyberpunk 2077",
+      "type": "Game",
+      "genre": "RPG",
+      "imageUrl": "/images/games/cyberpunk.jpg",
+      "overallScore": 6,
+      "overallTier": "A",
+      "createdAt": "2024-03-04T10:00:00.000Z"
+    },
+    {
+      "id": "g005",
+      "title": "Hades",
+      "type": "Game",
+      "genre": "Roguelike",
+      "imageUrl": "/images/games/hades.jpg",
+      "overallScore": 7.8,
+      "overallTier": "A",
+      "createdAt": "2024-03-05T10:00:00.000Z"
+    }
+  ],
+  "reviews": []
+}

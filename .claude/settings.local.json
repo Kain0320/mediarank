@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); require\\('./routes/stats'\\); require\\('./routes/search'\\); console.log\\('OK'\\)\")",
+      "Bash(node -e ' *)"
+    ]
+  }
+}
