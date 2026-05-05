@@ -1,8 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); require\\('./routes/stats'\\); require\\('./routes/search'\\); console.log\\('OK'\\)\")",
-      "Bash(node -e ' *)"
+      "Bash(pkill -f \"node server.js\")",
+      "Bash(node server.js)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"admin123\"}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('Login OK:', d.get\\('username'\\), d.get\\('role'\\)\\)\")"
     ]
   }
 }

@@ -17,6 +17,7 @@ const db           = require("../helpers/db");
 const { searchGames }  = require("../helpers/igdb");
 const { searchMedia }  = require("../helpers/tmdb");
 const { requireAdmin } = require("./auth");
+const { scoreToTier }  = require("../helpers/scoring");
 
 // ── GET /api/search ───────────────────────────────────────────
 router.get("/", async (req, res) => {
@@ -52,12 +53,13 @@ router.get("/", async (req, res) => {
 // Přijme jeden výsledek z /api/search a uloží ho do data.json
 // Tělo: { title, type, summary, imageUrl, rating, genres, year }
 router.post("/import", requireAdmin, (req, res) => {
-  const { title, type, summary, imageUrl, rating, genres, year } = req.body;
+  const { title, type, summary, imageUrl, rating, genres, year, tmdbId, igdbId } = req.body;
 
   if (!title || !type) {
     return res.status(400).json({ error: "title a type jsou povinné" });
   }
 
+  const overallScore = rating ? Math.round(Number(rating) * 10) / 10 : null;
   const newItem = {
     id:           uuidv4(),
     title,
@@ -65,9 +67,11 @@ router.post("/import", requireAdmin, (req, res) => {
     genre:        genres || null,
     summary:      summary || null,
     imageUrl:     imageUrl || null,
-    year:         year || null,
-    overallScore: null,
-    overallTier:  null,
+    year:         year    || null,
+    tmdbId:       tmdbId  || null,
+    igdbId:       igdbId  || null,
+    overallScore,
+    overallTier:  overallScore ? scoreToTier(overallScore) : null,
     createdAt:    new Date().toISOString()
   };
 

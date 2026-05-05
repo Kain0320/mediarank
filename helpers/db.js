@@ -17,14 +17,15 @@ const DATA_FILE = path.join(__dirname, "../data/data.json");
 
 // Výchozí struktura prázdné databáze
 const DEFAULT_DATA = {
-  media:   [],   // pole MediaItem objektů
-  reviews: []    // pole Review objektů
+  media:    [],   // pole MediaItem objektů
+  reviews:  [],   // pole Review objektů
+  episodes: []    // pole EpisodeRating objektů (pro seriály)
 };
 
 /**
  * Přečte a vrátí celý obsah data.json.
  * Pokud soubor neexistuje, vytvoří ho s výchozí prázdnou strukturou.
- * @returns {{ media: Array, reviews: Array }}
+ * @returns {{ media: Array, reviews: Array, episodes: Array }}
  */
 function read() {
   if (!fs.existsSync(DATA_FILE)) {

@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="pageTitle">Detail – Media Ranker</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    body { background: #111; color: #e0e0e0; }
+
+    /* ── Navbar ── */
+    .site-nav { background: #1a1a1a; border-bottom: 1px solid #2a2a2a; }
+
+    /* ── Hero ── */
+    .hero-wrap {
+      position: relative;
+      min-height: 420px;
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+    .hero-backdrop {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center 20%;
+      filter: blur(22px) brightness(0.22);
+      transform: scale(1.1);
+    }
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 30%, #111 100%);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 40px 0 36px;
+      width: 100%;
+    }
+    .hero-poster {
+      width: 185px;
+      min-width: 185px;
+      height: 278px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.7);
+    }
+    .hero-poster-placeholder {
+      width: 185px;
+      min-width: 185px;
+      height: 278px;
+      border-radius: 8px;
+      background: #2a2a2a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,.7);
+    }
+    .hero-title {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+    .hero-meta {
+      font-size: 0.9rem;
+      color: #adb5bd;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .hero-meta .dot { color: #555; }
+
+    /* Skóre blok (jako IMDB rating box) */
+    .score-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 12px 20px;
+      min-width: 100px;
+    }
+    .score-label { font-size: 0.72rem; color: #adb5bd; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
+    .score-value { font-size: 2rem; font-weight: 800; color: #ffc107; line-height: 1; }
+    .score-max   { font-size: 0.85rem; color: #6c757d; }
+
+    .tier-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 12px 20px;
+      min-width: 80px;
+    }
+    .tier-label { font-size: 0.72rem; color: #adb5bd; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
+    .tier-value { font-size: 2rem; font-weight: 800; line-height: 1; }
+
+    .hero-summary {
+      color: #ced4da;
+      font-size: 0.97rem;
+      line-height: 1.7;
+      max-width: 680px;
+      margin-top: 14px;
+    }
+
+    /* ── Info sekce pod hero ── */
+    .info-section { border-top: 1px solid #2a2a2a; padding: 28px 0; }
+
+    .info-row {
+      display: flex;
+      padding: 11px 0;
+      border-bottom: 1px solid #1f1f1f;
+      gap: 16px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-key {
+      min-width: 160px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding-top: 1px;
+    }
+    .info-val {
+      font-size: 0.97rem;
+      color: #dee2e6;
+    }
+
+    /* Žánrové tagy */
+    .genre-tag {
+      display: inline-block;
+      border: 1px solid #444;
+      border-radius: 20px;
+      padding: 2px 12px;
+      font-size: 0.82rem;
+      color: #ced4da;
+      margin: 2px 4px 2px 0;
+    }
+
+    /* ── Sezóny ── */
+    .seasons-section { border-top: 1px solid #2a2a2a; padding: 28px 0; }
+    .seasons-section h3 { font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 20px; }
+
+    .season-card { background: #1a1a1a; border-radius: 10px; margin-bottom: 10px; overflow: hidden; border: 1px solid #2a2a2a; }
+    .season-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      cursor: pointer;
+      user-select: none;
+      transition: background .15s;
+    }
+    .season-head:hover { background: #222; }
+    .season-head-left { font-size: 1rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
+    .season-head-right { display: flex; align-items: center; gap: 14px; }
+    .season-ep-count { font-size: 0.82rem; color: #6c757d; }
+    .season-score { font-size: 0.92rem; font-weight: 700; color: #ffc107; }
+    .season-chevron { transition: transform .2s; color: #6c757d; }
+    .season-card.open .season-chevron { transform: rotate(180deg); }
+
+    .ep-loading { padding: 16px 18px; color: #6c757d; font-size: 0.88rem; }
+
+    .ep-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-top: 1px solid #1f1f1f;
+      flex-wrap: wrap;
+    }
+    .ep-num { min-width: 36px; font-size: 0.78rem; font-weight: 700; color: #6c757d; flex-shrink: 0; }
+    .ep-title { flex: 1; min-width: 120px; font-size: 0.9rem; color: #ced4da; }
+    .ep-avg { font-size: 0.82rem; color: #ffc107; font-weight: 700; white-space: nowrap; min-width: 54px; text-align: right; }
+
+    /* Inline hodnocení epizody */
+    .ep-rate-wrap { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+    .ep-rate-btn {
+      width: 24px; height: 24px;
+      border-radius: 4px;
+      border: 1px solid #2e2e2e;
+      background: #161616;
+      color: #6c757d;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .1s;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0; line-height: 1;
+    }
+    .ep-rate-btn:hover { background: #ffc107; border-color: #ffc107; color: #000; }
+    .ep-rate-btn.my-rating { background: #ffc107; border-color: #ffc107; color: #000; }
+    .ep-my-score { font-size: 0.75rem; color: #ffc107; font-weight: 700; white-space: nowrap; margin-left: 4px; }
+
+    /* ── Recenze ── */
+    .reviews-section { border-top: 1px solid #2a2a2a; padding: 28px 0 40px; }
+    .reviews-section h3 { font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 20px; }
+
+    .review-form-box {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 28px;
+    }
+    .review-form-box h5 { color: #fff; font-size: 1rem; margin-bottom: 16px; }
+
+    .star-picker { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+    .star-btn {
+      width: 36px; height: 36px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #222;
+      color: #adb5bd;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .star-btn:hover, .star-btn.active {
+      background: #ffc107;
+      border-color: #ffc107;
+      color: #000;
+    }
+
+    .tier-picker { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+    .tier-btn {
+      width: 44px; height: 44px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #222;
+      color: #adb5bd;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tier-btn:hover { border-color: #666; color: #fff; }
+    .tier-btn.active-S { background: #dc3545; border-color: #dc3545; color: #fff; }
+    .tier-btn.active-A { background: #e6a817; border-color: #e6a817; color: #000; }
+    .tier-btn.active-B { background: #198754; border-color: #198754; color: #fff; }
+    .tier-btn.active-C { background: #0dcaf0; border-color: #0dcaf0; color: #000; }
+    .tier-btn.active-D { background: #6c757d; border-color: #6c757d; color: #fff; }
+
+    .login-prompt {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 28px;
+      color: #6c757d;
+      text-align: center;
+    }
+
+    .review-card {
+      background: #1a1a1a;
+      border: 1px solid #252525;
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 10px;
+    }
+    .review-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+    .review-username { font-weight: 700; color: #fff; font-size: 0.95rem; }
+    .review-date { font-size: 0.78rem; color: #6c757d; margin-left: auto; }
+    .review-rating-stars { color: #ffc107; font-size: 0.85rem; }
+    .review-rating-tier {
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 5px;
+    }
+    .review-comment { font-size: 0.9rem; color: #ced4da; line-height: 1.6; margin-top: 6px; }
+    .review-delete-btn { font-size: 0.78rem; color: #dc3545; background: none; border: none; cursor: pointer; padding: 0; margin-left: 8px; }
+    .review-delete-btn:hover { text-decoration: underline; }
+
+    /* ── Trailer tlačítko ── */
+    .trailer-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s;
+      margin-top: 14px;
+    }
+    .trailer-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+    .trailer-btn .play-icon { font-size: 1.1rem; }
+
+    /* ── Cast sekce ── */
+    .cast-section { border-top: 1px solid #2a2a2a; padding: 28px 0; }
+    .cast-section h3 { font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 18px; }
+    .cast-scroll {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    .cast-card {
+      flex-shrink: 0;
+      width: 100px;
+      text-align: center;
+    }
+    .cast-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #2a2a2a;
+      margin: 0 auto 8px;
+      display: block;
+      border: 2px solid #333;
+    }
+    .cast-photo-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #2a2a2a;
+      margin: 0 auto 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      border: 2px solid #333;
+    }
+    .cast-name { font-size: 0.78rem; font-weight: 600; color: #dee2e6; line-height: 1.3; margin-bottom: 2px; }
+    .cast-char { font-size: 0.72rem; color: #6c757d; line-height: 1.3; }
+
+    /* ── Screenshots (hry) ── */
+    .screenshots-section { border-top: 1px solid #2a2a2a; padding: 28px 0; }
+    .screenshots-section h3 { font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 18px; }
+    .screenshots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .screenshot-img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform .2s, opacity .2s;
+      border: 1px solid #2a2a2a;
+    }
+    .screenshot-img:hover { transform: scale(1.02); opacity: .9; }
+
+    /* ── Trailer modal ── */
+    .trailer-modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.85);
+      z-index: 1050;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .trailer-modal-inner {
+      position: relative;
+      width: min(900px, 95vw);
+      aspect-ratio: 16/9;
+    }
+    .trailer-modal-inner iframe {
+      width: 100%; height: 100%;
+      border: none; border-radius: 10px;
+    }
+    .trailer-close {
+      position: absolute; top: -40px; right: 0;
+      background: none; border: none;
+      color: #fff; font-size: 1.6rem; cursor: pointer;
+      opacity: .8;
+    }
+    .trailer-close:hover { opacity: 1; }
+
+    /* ── Loader ── */
+    .page-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      color: #6c757d;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar site-nav py-2">
+    <div class="container d-flex align-items-center gap-3">
+      <a href="/" class="text-decoration-none d-flex align-items-center gap-2">
+        <span style="font-size:1.4rem;">🎬</span>
+        <span class="fw-bold text-white" style="font-size:1.1rem;">Media Ranker</span>
+      </a>
+      <a href="/" class="btn btn-sm btn-outline-secondary ms-2">
+        <i class="bi bi-arrow-left"></i> Zpět
+      </a>
+    </div>
+  </nav>
+
+  <!-- Loader -->
+  <div class="page-loader" id="pageLoader">
+    <div class="spinner-border text-secondary mb-3" role="status"></div>
+    <span>Načítám…</span>
+  </div>
+
+  <!-- Error stav -->
+  <div class="container py-5 text-center d-none" id="pageError">
+    <p class="text-danger fs-5">Položka nebyla nalezena.</p>
+    <a href="/" class="btn btn-outline-light mt-2">← Zpět na přehled</a>
+  </div>
+
+  <!-- Obsah stránky (skrytý do načtení) -->
+  <div id="pageContent" style="display:none;">
+
+    <!-- Hero -->
+    <div class="hero-wrap">
+      <div class="hero-backdrop" id="heroBackdrop"></div>
+      <div class="hero-gradient"></div>
+      <div class="hero-content">
+        <div class="container">
+          <div class="d-flex gap-4 flex-column flex-sm-row align-items-start">
+
+            <!-- Poster -->
+            <div id="posterWrap"></div>
+
+            <!-- Info -->
+            <div class="flex-grow-1 min-w-0">
+              <div class="hero-meta" id="heroMeta"></div>
+              <h1 class="hero-title" id="heroTitle"></h1>
+
+              <!-- Hodnocení boxy -->
+              <div class="d-flex gap-3 flex-wrap mb-3" id="ratingBoxes"></div>
+
+              <!-- Popis -->
+              <p class="hero-summary" id="heroSummary"></p>
+
+              <!-- Žánrové tagy -->
+              <div id="genreTags"></div>
+
+              <!-- Akční tlačítka (trailer + watchlist) -->
+              <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+                <div id="trailerBtnWrap"></div>
+                <button id="watchlistBtn" class="trailer-btn d-none" style="margin-top:0;">
+                  <i class="bi bi-bookmark me-1" id="watchlistBtnIcon"></i>
+                  <span id="watchlistBtnText">Do watchlistu</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info sekce -->
+    <div class="info-section">
+      <div class="container">
+        <div id="infoRows"></div>
+      </div>
+    </div>
+
+    <!-- Obsazení / vývojáři -->
+    <div class="cast-section d-none" id="castSection">
+      <div class="container">
+        <h3 id="castSectionTitle">Obsazení</h3>
+        <div class="cast-scroll" id="castList"></div>
+      </div>
+    </div>
+
+    <!-- Screenshoty (hry) -->
+    <div class="screenshots-section d-none" id="screenshotsSection">
+      <div class="container">
+        <h3>Screenshoty</h3>
+        <div class="screenshots-grid" id="screenshotsGrid"></div>
+      </div>
+    </div>
+
+    <!-- Sezóny (jen seriály) -->
+    <div class="seasons-section d-none" id="seasonsSection">
+      <div class="container">
+        <h3 id="seasonsSectionTitle">Sezóny</h3>
+        <div id="seasonsContent"></div>
+      </div>
+    </div>
+
+    <!-- Recenze uživatelů -->
+    <div class="reviews-section">
+      <div class="container">
+        <h3>Hodnocení uživatelů</h3>
+
+        <!-- Formulář (přihlášený) / výzva k přihlášení -->
+        <div id="reviewFormArea"></div>
+
+        <!-- Seznam recenzí -->
+        <div id="reviewsList"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/toast.js"></script>
+  <script>
+    const TIER_COLOR = { S: "#dc3545", A: "#e6a817", B: "#198754", C: "#0dcaf0", D: "#6c757d" };
+    const TYPE_EMOJI = { Movie: "🎬", Series: "📺", Game: "🎮" };
+    const TYPE_LABEL = { Movie: "Film", Series: "Seriál", Game: "Hra" };
+
+    // Získej ID z URL: /media/<id>
+    const mediaId = window.location.pathname.split("/").filter(Boolean).pop();
+
+    function showError() {
+      document.getElementById("pageLoader").style.display = "none";
+      document.getElementById("pageError").classList.remove("d-none");
+    }
+
+    function renderHero(item) {
+      // Backdrop
+      if (item.imageUrl) {
+        document.getElementById("heroBackdrop").style.backgroundImage = `url('${item.imageUrl}')`;
+      }
+
+      // Poster
+      const posterWrap = document.getElementById("posterWrap");
+      if (item.imageUrl) {
+        posterWrap.innerHTML = `<img src="${item.imageUrl}" alt="${item.title}" class="hero-poster"
+          onerror="this.outerHTML='<div class=hero-poster-placeholder>${TYPE_EMOJI[item.type] || "📄"}</div>'" />`;
+      } else {
+        posterWrap.innerHTML = `<div class="hero-poster-placeholder">${TYPE_EMOJI[item.type] || "📄"}</div>`;
+      }
+
+      // Meta řádek
+      const metaParts = [];
+      if (item.year) metaParts.push(`<span>${item.year}</span><span class="dot">·</span>`);
+      metaParts.push(`<span>${TYPE_EMOJI[item.type]} ${TYPE_LABEL[item.type] || item.type}</span>`);
+      if (item.genre) metaParts.push(`<span class="dot">·</span><span>${item.genre.split(",")[0].trim()}</span>`);
+      document.getElementById("heroMeta").innerHTML = metaParts.join(" ");
+
+      // Titul
+      document.getElementById("heroTitle").textContent = item.title;
+
+      // Rating boxy
+      const boxes = [];
+      if (item.overallScore !== null && item.overallScore !== undefined) {
+        boxes.push(`
+          <div class="score-box">
+            <span class="score-label">⭐ Skóre</span>
+            <span class="score-value">${item.overallScore.toFixed(1)}</span>
+            <span class="score-max">/ 10</span>
+          </div>`);
+      }
+      if (item.overallTier) {
+        const col = TIER_COLOR[item.overallTier] || "#6c757d";
+        boxes.push(`
+          <div class="tier-box">
+            <span class="tier-label">Tier</span>
+            <span class="tier-value" style="color:${col};">${item.overallTier}</span>
+          </div>`);
+      }
+      document.getElementById("ratingBoxes").innerHTML = boxes.join("");
+
+      // Popis
+      document.getElementById("heroSummary").textContent = item.summary || "";
+
+      // Žánrové tagy
+      if (item.genre) {
+        document.getElementById("genreTags").innerHTML = item.genre
+          .split(",")
+          .map(g => `<span class="genre-tag">${g.trim()}</span>`)
+          .join("");
+      }
+    }
+
+    function renderInfo(item, extra = {}) {
+      const rows = [];
+
+      if (item.year) rows.push(["Rok vydání", item.year]);
+      rows.push(["Typ", `${TYPE_EMOJI[item.type]} ${TYPE_LABEL[item.type] || item.type}`]);
+      if (item.genre) rows.push(["Žánr", item.genre]);
+
+      // ── Film extra ───────────────────────────────────────────
+      if (item.type === "Movie") {
+        if (extra.runtime)     rows.push(["Délka", `${extra.runtime} min`]);
+        if (extra.directors?.length) rows.push(["Režisér", extra.directors.join(", ")]);
+        if (extra.writers?.length)   rows.push(["Scénář", extra.writers.join(", ")]);
+        if (extra.productionCo?.length) rows.push(["Produkce", extra.productionCo.join(", ")]);
+        if (extra.originalTitle) rows.push(["Originální název", extra.originalTitle]);
+        if (extra.status)        rows.push(["Status", extra.status]);
+        if (extra.budget)        rows.push(["Rozpočet", "$" + extra.budget.toLocaleString("cs-CZ")]);
+        if (extra.revenue)       rows.push(["Tržby", "$" + extra.revenue.toLocaleString("cs-CZ")]);
+      }
+
+      // ── Seriál extra ─────────────────────────────────────────
+      if (item.type === "Series") {
+        if (extra.numberOfSeasons)  rows.push(["Počet sezón", extra.numberOfSeasons]);
+        if (extra.numberOfEpisodes) rows.push(["Počet epizod", extra.numberOfEpisodes]);
+        if (extra.episodeRuntime)   rows.push(["Délka epizody", `${extra.episodeRuntime} min`]);
+        if (extra.creators?.length) rows.push(["Tvůrce", extra.creators.join(", ")]);
+        if (extra.networks?.length) rows.push(["Stanice", extra.networks.join(", ")]);
+        if (extra.originalTitle)    rows.push(["Originální název", extra.originalTitle]);
+        if (extra.status)           rows.push(["Status", extra.status]);
+      }
+
+      // ── Hra extra ────────────────────────────────────────────
+      if (item.type === "Game") {
+        if (extra.developers?.length) rows.push(["Vývojář", extra.developers.join(", ")]);
+        if (extra.publishers?.length) rows.push(["Vydavatel", extra.publishers.join(", ")]);
+        if (extra.platforms?.length)  rows.push(["Platformy", extra.platforms.join(", ")]);
+        if (extra.gameModes?.length)  rows.push(["Herní mód", extra.gameModes.join(", ")]);
+        if (extra.criticScore)        rows.push(["Kritické hodnocení", `⭐ ${extra.criticScore.toFixed(1)} / 10`]);
+        if (extra.website)            rows.push(["Oficiální web", `<a href="${extra.website}" target="_blank" rel="noopener" class="text-info">${extra.website}</a>`]);
+      }
+
+      // ── Společné ─────────────────────────────────────────────
+      if (item.overallScore !== null && item.overallScore !== undefined)
+        rows.push(["Naše hodnocení", `⭐ ${item.overallScore.toFixed(1)} / 10`]);
+      if (item.overallTier) rows.push(["Tier", `Tier ${item.overallTier}`]);
+      rows.push(["Přidáno", new Date(item.createdAt).toLocaleDateString("cs-CZ")]);
+
+      document.getElementById("infoRows").innerHTML = rows.map(([k, v]) => `
+        <div class="info-row">
+          <span class="info-key">${k}</span>
+          <span class="info-val">${v}</span>
+        </div>`).join("");
+    }
+
+    // ── Trailer a cast z extra dat ────────────────────────────
+    function renderExtra(item, extra) {
+      // Trailer tlačítko v hero
+      if (extra.trailerKey) {
+        const trailerWrap = document.getElementById("trailerBtnWrap");
+        if (trailerWrap) {
+          trailerWrap.innerHTML = `
+            <a class="trailer-btn" onclick="openTrailer('${extra.trailerKey}')">
+              <span class="play-icon">▶</span> Přehrát trailer
+            </a>`;
+        }
+      }
+
+      // Obsazení
+      const cast = extra.cast || [];
+      if (cast.length > 0) {
+        const castSection = document.getElementById("castSection");
+        const castTitle   = document.getElementById("castSectionTitle");
+        castSection.classList.remove("d-none");
+        castTitle.textContent = item.type === "Game" ? "Vývojáři" : "Obsazení";
+
+        document.getElementById("castList").innerHTML = cast.map(p => `
+          <div class="cast-card">
+            ${p.photo
+              ? `<img src="${p.photo}" alt="${p.name}" class="cast-photo"
+                      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+              : ""}
+            <div class="cast-photo-placeholder" ${p.photo ? 'style="display:none"' : ""}>👤</div>
+            <div class="cast-name">${p.name}</div>
+            ${p.character ? `<div class="cast-char">${p.character}</div>` : ""}
+          </div>`).join("");
+      }
+
+      // Screenshoty (hry)
+      const shots = extra.screenshots || [];
+      if (shots.length > 0) {
+        document.getElementById("screenshotsSection").classList.remove("d-none");
+        document.getElementById("screenshotsGrid").innerHTML = shots.map(url => `
+          <img src="${url}" class="screenshot-img" alt="Screenshot"
+               onclick="openScreenshot('${url}')">`).join("");
+      }
+
+      // Storyline hry (doplní summary pokud chybí)
+      if (item.type === "Game" && extra.storyline && !item.summary) {
+        document.getElementById("heroSummary").textContent = extra.storyline;
+      }
+    }
+
+    // ── Trailer modal ─────────────────────────────────────────
+    function openTrailer(key) {
+      const backdrop = document.createElement("div");
+      backdrop.className = "trailer-modal-backdrop";
+      backdrop.innerHTML = `
+        <div class="trailer-modal-inner">
+          <button class="trailer-close" onclick="this.closest('.trailer-modal-backdrop').remove()">✕</button>
+          <iframe src="https://www.youtube.com/embed/${key}?autoplay=1"
+                  allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>`;
+      backdrop.addEventListener("click", e => { if (e.target === backdrop) backdrop.remove(); });
+      document.body.appendChild(backdrop);
+    }
+
+    function openScreenshot(url) {
+      const backdrop = document.createElement("div");
+      backdrop.className = "trailer-modal-backdrop";
+      backdrop.innerHTML = `
+        <div style="position:relative;max-width:95vw;">
+          <button class="trailer-close" onclick="this.closest('.trailer-modal-backdrop').remove()">✕</button>
+          <img src="${url}" style="max-width:95vw;max-height:90vh;border-radius:10px;display:block;">
+        </div>`;
+      backdrop.addEventListener("click", e => { if (e.target === backdrop) backdrop.remove(); });
+      document.body.appendChild(backdrop);
+    }
+
+    // ── Sezóny z TMDB ─────────────────────────────────────────
+    let _userEpisodes = []; // hodnocení uživatelů z naší DB
+
+    async function loadSeasons(item) {
+      if (item.type !== "Series") return;
+
+      const seasonsSection = document.getElementById("seasonsSection");
+      const container      = document.getElementById("seasonsContent");
+      seasonsSection.classList.remove("d-none");
+      container.innerHTML  = `<div class="ep-loading">Načítám sezóny…</div>`;
+
+      // Načti user hodnocení z naší DB
+      const epRes = await fetch(`/api/media/${mediaId}/episodes`);
+      _userEpisodes = epRes.ok ? await epRes.json() : [];
+
+      if (item.tmdbId) {
+        // Seriál importovaný z TMDB — načti počet sezón
+        try {
+          const infoRes = await fetch(`/api/media/${mediaId}/tmdb-info`);
+          if (!infoRes.ok) throw new Error();
+          const info = await infoRes.json();
+          renderSeasonCards(info.numberOfSeasons);
+        } catch {
+          // Fallback na naše hodnocení
+          renderSeasonsFallback();
+        }
+      } else {
+        // Manuálně přidaný seriál — zobraz jen ohodnocené epizody
+        renderSeasonsFallback();
+      }
+    }
+
+    function renderSeasonCards(count) {
+      const container = document.getElementById("seasonsContent");
+      container.innerHTML = "";
+      document.getElementById("seasonsSectionTitle").textContent = `Sezóny (${count})`;
+
+      for (let s = 1; s <= count; s++) {
+        const card = document.createElement("div");
+        card.className = "season-card";
+        card.dataset.season = s;
+
+        // Průměr sezóny — jen uživatelská hodnocení (s username)
+        const dbEps   = _userEpisodes.filter(e => e.season === s && e.username);
+        const dbAvg   = dbEps.length
+          ? (dbEps.reduce((sum, e) => sum + e.rating, 0) / dbEps.length).toFixed(1)
+          : null;
+        const scoreHtml = dbAvg
+          ? `<span class="season-score">⭐ ${dbAvg}</span>`
+          : "";
+
+        card.innerHTML = `
+          <div class="season-head" onclick="toggleSeason(this, ${s})">
+            <span class="season-head-left">
+              <i class="bi bi-tv"></i> Sezóna ${s}
+            </span>
+            <div class="season-head-right">
+              ${scoreHtml}
+              <i class="bi bi-chevron-down season-chevron"></i>
+            </div>
+          </div>
+          <div class="season-body" style="display:none;" id="season-body-${s}">
+            <div class="ep-loading">Načítám epizody…</div>
+          </div>`;
+
+        container.appendChild(card);
+      }
+    }
+
+    async function toggleSeason(headEl, seasonNum) {
+      const card = headEl.closest(".season-card");
+      const body = document.getElementById(`season-body-${seasonNum}`);
+      const isOpen = card.classList.contains("open");
+
+      if (isOpen) {
+        card.classList.remove("open");
+        body.style.display = "none";
+        return;
+      }
+
+      card.classList.add("open");
+      body.style.display = "block";
+
+      // Načti epizody z TMDB jen jednou
+      if (body.dataset.loaded) return;
+      body.dataset.loaded = "1";
+
+      try {
+        const res = await fetch(`/api/media/${mediaId}/tmdb-season/${seasonNum}`);
+        const eps = res.ok ? await res.json() : [];
+        renderEpisodeRows(body, seasonNum, eps);
+
+        // Aktualizuj průměr v hlavičce sezóny
+        const dbEps = _userEpisodes.filter(e => e.season === seasonNum);
+        if (dbEps.length) {
+          const avg = (dbEps.reduce((s, e) => s + e.rating, 0) / dbEps.length).toFixed(1);
+          const scoreEl = headEl.querySelector(".season-score");
+          if (scoreEl) scoreEl.textContent = `⭐ ${avg}`;
+          else headEl.querySelector(".season-head-right").insertAdjacentHTML(
+            "afterbegin", `<span class="season-score">⭐ ${avg}</span>`
+          );
+        }
+      } catch {
+        body.innerHTML = `<div class="ep-loading text-danger">Nepodařilo se načíst epizody.</div>`;
+      }
+    }
+
+    function renderEpisodeRows(container, seasonNum, tmdbEps) {
+      if (!tmdbEps.length) {
+        container.innerHTML = `<div class="ep-loading">Žádné epizody nenalezeny.</div>`;
+        return;
+      }
+
+      container.innerHTML = tmdbEps.map(ep => {
+        const allForEp = _userEpisodes.filter(
+          e => e.season === seasonNum && e.episode === ep.episode
+        );
+        // Admin hodnocení = bez username (nebo username === null)
+        const adminRating = allForEp.find(e => !e.username);
+        // Uživatelská hodnocení = s username
+        const userRatings = allForEp.filter(e => e.username);
+        // Hodnocení přihlášeného uživatele
+        const myRating    = loggedUser ? userRatings.find(e => e.username === loggedUser) : null;
+        // Průměr hodnocení uživatelů (bez admina)
+        const communityAvg = userRatings.length
+          ? (userRatings.reduce((s, e) => s + e.rating, 0) / userRatings.length).toFixed(1)
+          : null;
+
+        const adminHtml = adminRating
+          ? `<span title="Admin hodnocení" style="font-size:.75rem;color:#6c757d;white-space:nowrap;">🛡 ${adminRating.rating}</span>`
+          : "";
+        const communityHtml = communityAvg
+          ? `<span class="ep-avg" title="Průměr uživatelů">👥 ${communityAvg}</span>`
+          : `<span class="ep-avg" style="color:#333;">—</span>`;
+
+        const rateUI = loggedUser ? `
+          <div class="ep-rate-wrap">
+            ${[1,2,3,4,5,6,7,8,9,10].map(n => `
+              <button class="ep-rate-btn${myRating?.rating === n ? " my-rating" : ""}"
+                title="${n}/10"
+                onclick="rateEpisode(${seasonNum}, ${ep.episode}, ${n})">
+                ${n}
+              </button>`).join("")}
+            ${myRating ? `<span class="ep-my-score">Tvoje: ${myRating.rating}</span>` : ""}
+          </div>` : "";
+
+        return `
+          <div class="ep-row" id="ep-${seasonNum}-${ep.episode}">
+            <span class="ep-num">E${String(ep.episode).padStart(2, "0")}</span>
+            <span class="ep-title">${ep.name || `Epizoda ${ep.episode}`}</span>
+            ${adminHtml}
+            ${communityHtml}
+            ${rateUI}
+          </div>`;
+      }).join("");
+    }
+
+    // Fallback pro manuálně přidané seriály (bez tmdbId)
+    function renderSeasonsFallback() {
+      const container = document.getElementById("seasonsContent");
+      if (!_userEpisodes.length) {
+        container.innerHTML = `<p class="text-muted">Žádné epizody zatím nebyly ohodnoceny.</p>`;
+        return;
+      }
+      const bySeasons = {};
+      _userEpisodes.forEach(e => {
+        if (!bySeasons[e.season]) bySeasons[e.season] = [];
+        bySeasons[e.season].push(e);
+      });
+      const count = Object.keys(bySeasons).length;
+      document.getElementById("seasonsSectionTitle").textContent = `Sezóny (${count})`;
+      renderSeasonCards(Math.max(...Object.keys(bySeasons).map(Number)));
+      Object.keys(bySeasons).forEach(s => {
+        const body = document.getElementById(`season-body-${s}`);
+        if (body) {
+          body.style.display = "block";
+          body.dataset.loaded = "1";
+          document.querySelector(`[data-season="${s}"]`)?.classList.add("open");
+          renderEpisodeRows(body, Number(s), bySeasons[s].map(e => ({
+            episode: e.episode, name: e.title || null
+          })));
+        }
+      });
+    }
+
+    async function rateEpisode(season, epNum, rating) {
+      if (!loggedUser || !loggedToken) return;
+
+      const res = await fetch(`/api/media/${mediaId}/episodes`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${loggedToken}` },
+        body:    JSON.stringify({ season, episode: epNum, rating, username: loggedUser })
+      });
+      if (!res.ok) {
+        showToast("Nepodařilo se uložit hodnocení", "danger");
+        return;
+      }
+      showToast(`Epizoda S${String(season).padStart(2,"0")}E${String(epNum).padStart(2,"0")} hodnocena: ${rating}/10`, "success");
+
+      // Obnov user hodnocení a překresli řádek
+      const epRes = await fetch(`/api/media/${mediaId}/episodes`);
+      _userEpisodes = epRes.ok ? await epRes.json() : [];
+
+      const body = document.getElementById(`season-body-${season}`);
+      if (body && body.dataset.loaded) {
+        const tmdbEps = Array.from(body.querySelectorAll(".ep-row")).map(row => ({
+          episode: parseInt(row.id.split("-")[2]),
+          name:    row.querySelector(".ep-title")?.textContent || null
+        }));
+        renderEpisodeRows(body, season, tmdbEps);
+      }
+
+      // Aktualizuj skóre seriálu v hero
+      const itemRes = await fetch(`/api/media/${mediaId}`);
+      if (itemRes.ok) renderRatingBoxes(await itemRes.json());
+
+      // Aktualizuj průměr sezóny v hlavičce — jen user hodnocení
+      const dbEps = _userEpisodes.filter(e => e.season === season && e.username);
+      if (dbEps.length) {
+        const avg = (dbEps.reduce((s, e) => s + e.rating, 0) / dbEps.length).toFixed(1);
+        const head = document.querySelector(`.season-card[data-season="${season}"] .season-head-right`);
+        if (head) {
+          let scoreEl = head.querySelector(".season-score");
+          if (scoreEl) scoreEl.textContent = `⭐ ${avg}`;
+          else head.insertAdjacentHTML("afterbegin", `<span class="season-score">⭐ ${avg}</span>`);
+        }
+      }
+    }
+
+    // ── Auth ──────────────────────────────────────────────────
+    const loggedUser  = localStorage.getItem("username");
+    const loggedToken = localStorage.getItem("token");
+
+    // ── Init ──────────────────────────────────────────────────
+    async function init() {
+      if (!mediaId) { showError(); return; }
+
+      const itemRes = await fetch(`/api/media/${mediaId}`);
+      if (!itemRes.ok) { showError(); return; }
+      const item = await itemRes.json();
+
+      document.getElementById("pageLoader").style.display = "none";
+      document.getElementById("pageContent").style.display = "block";
+      document.title = `${item.title} – Media Ranker`;
+
+      renderHero(item);
+      renderReviewForm();
+      setupWatchlistBtn(mediaId); // watchlist tlačítko (async, nezablokuje)
+      await loadReviews();
+
+      if (item.type === "Series") {
+        await loadSeasons(item);
+      }
+
+      // Extra info (obsazení, trailer, atd.) — async, nezablokuje render
+      loadExtra(item);
+    }
+
+    async function loadExtra(item) {
+      try {
+        const res = await fetch(`/api/media/${item.id}/extra`);
+        if (!res.ok) return;
+        const extra = await res.json();
+        renderInfo(item, extra);
+        renderExtra(item, extra);
+      } catch {
+        // Extra info není kritická — stránka funguje i bez ní
+        renderInfo(item);
+      }
+    }
+
+    // ── Formulář pro recenzi ──────────────────────────────────
+    let selectedRatingType  = "stars";
+    let selectedRatingValue = null;
+
+    function renderReviewForm() {
+      const area = document.getElementById("reviewFormArea");
+
+      if (!loggedUser || !loggedToken) {
+        area.innerHTML = `
+          <div class="login-prompt">
+            <i class="bi bi-star" style="font-size:1.6rem; display:block; margin-bottom:8px;"></i>
+            <span>Chceš ohodnotit? <a href="/login.html" class="text-info">Přihlas se</a> nebo <a href="/register.html" class="text-info">zaregistruj se</a>.</span>
+          </div>`;
+        return;
+      }
+
+      area.innerHTML = `
+        <div class="review-form-box">
+          <h5>Tvoje hodnocení</h5>
+
+          <!-- Přepínač typ -->
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-sm btn-outline-light active" id="typeStarsBtn" onclick="switchType('stars')">⭐ Hvězdy (1–10)</button>
+            <button class="btn btn-sm btn-outline-light" id="typeTierBtn"  onclick="switchType('tier')">🏆 Tier (S–D)</button>
+          </div>
+
+          <!-- Hvězdy -->
+          <div id="starsPickerWrap">
+            <div class="star-picker" id="starPicker">
+              ${[1,2,3,4,5,6,7,8,9,10].map(n =>
+                `<button class="star-btn" data-val="${n}" onclick="selectStar(${n})">${n}</button>`
+              ).join("")}
+            </div>
+            <small class="text-muted">Vyber číslo 1–10</small>
+          </div>
+
+          <!-- Tier -->
+          <div id="tierPickerWrap" style="display:none;">
+            <div class="tier-picker" id="tierPicker">
+              ${["S","A","B","C","D"].map(t =>
+                `<button class="tier-btn" data-val="${t}" onclick="selectTier('${t}')">${t}</button>`
+              ).join("")}
+            </div>
+            <small class="text-muted">S = nejlepší, D = nejhorší</small>
+          </div>
+
+          <!-- Komentář -->
+          <div class="mt-3">
+            <textarea class="form-control bg-dark text-white border-secondary"
+              id="reviewComment" rows="2"
+              placeholder="Komentář (volitelné)…"></textarea>
+          </div>
+
+          <div class="d-flex align-items-center gap-3 mt-3">
+            <button class="btn btn-warning fw-bold px-4" onclick="submitReview()">Odeslat hodnocení</button>
+            <span id="reviewError" class="text-danger small"></span>
+          </div>
+        </div>`;
+    }
+
+    function switchType(type) {
+      selectedRatingType  = type;
+      selectedRatingValue = null;
+      document.getElementById("starsPickerWrap").style.display = type === "stars" ? "block" : "none";
+      document.getElementById("tierPickerWrap").style.display  = type === "tier"  ? "block" : "none";
+      document.getElementById("typeStarsBtn").classList.toggle("active", type === "stars");
+      document.getElementById("typeTierBtn").classList.toggle("active", type === "tier");
+      // Reset výběru
+      document.querySelectorAll(".star-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tier-btn").forEach(b => b.className = "tier-btn");
+    }
+
+    function selectStar(n) {
+      selectedRatingValue = n;
+      document.querySelectorAll(".star-btn").forEach(b => {
+        b.classList.toggle("active", Number(b.dataset.val) === n);
+      });
+    }
+
+    function selectTier(t) {
+      selectedRatingValue = t;
+      document.querySelectorAll(".tier-btn").forEach(b => {
+        b.className = "tier-btn" + (b.dataset.val === t ? ` active-${t}` : "");
+      });
+    }
+
+    async function submitReview() {
+      const errEl = document.getElementById("reviewError");
+      errEl.textContent = "";
+
+      if (selectedRatingValue === null) {
+        errEl.textContent = "Nejdřív vyber hodnocení.";
+        return;
+      }
+
+      const body = {
+        mediaId,
+        username:    loggedUser,
+        ratingType:  selectedRatingType,
+        ratingValue: selectedRatingValue,
+        comment:     document.getElementById("reviewComment").value.trim() || null
+      };
+
+      const res = await fetch("/api/reviews", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${loggedToken}` },
+        body:    JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        errEl.textContent = err.error || "Chyba při odesílání.";
+        return;
+      }
+
+      // Obnov skóre v hero + seznam recenzí
+      const updatedItem = await fetch(`/api/media/${mediaId}`).then(r => r.json());
+      renderRatingBoxes(updatedItem);
+      await loadReviews();
+      errEl.textContent = "";
+      showToast("Hodnocení bylo přidáno!", "success");
+    }
+
+    // ── Načtení a zobrazení recenzí ───────────────────────────
+    async function loadReviews() {
+      const res     = await fetch(`/api/reviews?mediaId=${mediaId}`);
+      const reviews = res.ok ? await res.json() : [];
+      renderReviews(reviews);
+    }
+
+    const TIER_BG   = { S:"#dc3545",A:"#e6a817",B:"#198754",C:"#0dcaf0",D:"#6c757d" };
+    const TIER_TEXT = { S:"#fff",   A:"#000",   B:"#fff",   C:"#000",   D:"#fff"    };
+
+    function renderReviews(reviews) {
+      const container = document.getElementById("reviewsList");
+
+      if (reviews.length === 0) {
+        container.innerHTML = `<p class="text-muted">Zatím žádné hodnocení. Buď první!</p>`;
+        return;
+      }
+
+      container.innerHTML = reviews
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .map(r => {
+          const isOwn = r.username === loggedUser;
+          const deleteBtn = isOwn
+            ? `<button class="review-delete-btn" onclick="deleteReview('${r.id}')">✕ Smazat</button>`
+            : "";
+
+          let ratingHtml;
+          if (r.ratingType === "stars") {
+            const filled = Math.round(r.ratingValue / 2);
+            ratingHtml = `
+              <span class="review-rating-stars">${"★".repeat(filled)}${"☆".repeat(5-filled)}</span>
+              <span style="color:#ffc107; font-weight:700; font-size:.9rem;">${r.ratingValue} / 10</span>`;
+          } else {
+            const bg  = TIER_BG[r.ratingValue]   || "#6c757d";
+            const col = TIER_TEXT[r.ratingValue]  || "#fff";
+            ratingHtml = `<span class="review-rating-tier" style="background:${bg};color:${col};">Tier ${r.ratingValue}</span>`;
+          }
+
+          return `
+            <div class="review-card">
+              <div class="review-header">
+                <span class="review-username">👤 ${r.username}</span>
+                ${ratingHtml}
+                ${deleteBtn}
+                <span class="review-date">${new Date(r.createdAt).toLocaleDateString("cs-CZ")}</span>
+              </div>
+              ${r.comment ? `<div class="review-comment">${r.comment}</div>` : ""}
+            </div>`;
+        }).join("");
+    }
+
+    async function deleteReview(reviewId) {
+      if (!confirm("Smazat tvoje hodnocení?")) return;
+      const res = await fetch(`/api/reviews/${reviewId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${loggedToken}` }
+      });
+      if (res.ok) {
+        const updatedItem = await fetch(`/api/media/${mediaId}`).then(r => r.json());
+        renderRatingBoxes(updatedItem);
+        await loadReviews();
+        showToast("Hodnocení bylo smazáno", "info");
+      } else {
+        showToast("Nepodařilo se smazat hodnocení", "danger");
+      }
+    }
+
+    function renderRatingBoxes(item) {
+      const boxes = [];
+      if (item.overallScore !== null && item.overallScore !== undefined) {
+        boxes.push(`
+          <div class="score-box">
+            <span class="score-label">⭐ Skóre</span>
+            <span class="score-value">${item.overallScore.toFixed(1)}</span>
+            <span class="score-max">/ 10</span>
+          </div>`);
+      }
+      if (item.overallTier) {
+        const col = TIER_COLOR[item.overallTier] || "#6c757d";
+        boxes.push(`
+          <div class="tier-box">
+            <span class="tier-label">Tier</span>
+            <span class="tier-value" style="color:${col};">${item.overallTier}</span>
+          </div>`);
+      }
+      document.getElementById("ratingBoxes").innerHTML = boxes.join("") ||
+        `<span style="color:#6c757d; font-size:.9rem;">Bez hodnocení</span>`;
+    }
+
+    // ── Watchlist tlačítko ─────────────────────────────────────
+    // Labely se liší podle typu (hra = "Do hraní", jinak "Do watchlistu")
+    function watchlistLabels(itemType) {
+      if (itemType === "Game") {
+        return { add: "🎮 Do hraní", added: "✅ V seznamu hraní" };
+      }
+      return { add: "🔖 Do watchlistu", added: "📌 Ve watchlistu" };
+    }
+
+    async function setupWatchlistBtn(mediaId) {
+      const btn    = document.getElementById("watchlistBtn");
+      const icon   = document.getElementById("watchlistBtnIcon");
+      const textEl = document.getElementById("watchlistBtnText");
+      if (!loggedToken) return;
+
+      btn.classList.remove("d-none");
+
+      // Typ položky pro správné labely
+      const itemRes  = await fetch(`/api/media/${mediaId}`).catch(() => null);
+      const itemType = itemRes?.ok ? (await itemRes.json()).type : "Movie";
+      const labels   = watchlistLabels(itemType);
+
+      let isBookmarked = false;
+      try {
+        const res = await fetch("/api/watchlist/ids", {
+          headers: { "Authorization": `Bearer ${loggedToken}` }
+        });
+        if (res.ok) {
+          const { mediaIds } = await res.json();
+          isBookmarked = mediaIds.includes(mediaId);
+        }
+      } catch { /* silent */ }
+
+      updateWatchlistBtn(btn, icon, textEl, isBookmarked, labels);
+
+      btn.addEventListener("click", async () => {
+        try {
+          let res;
+          if (isBookmarked) {
+            res = await fetch(`/api/watchlist/${mediaId}`, {
+              method: "DELETE",
+              headers: { "Authorization": `Bearer ${loggedToken}` }
+            });
+            if (res.ok || res.status === 204) {
+              isBookmarked = false;
+              showToast(itemType === "Game" ? "Odebráno ze seznamu hraní" : "Odebráno z watchlistu", "info");
+            }
+          } else {
+            res = await fetch(`/api/watchlist/${mediaId}`, {
+              method: "POST",
+              headers: { "Authorization": `Bearer ${loggedToken}` }
+            });
+            if (res.ok || res.status === 201) {
+              isBookmarked = true;
+              showToast(itemType === "Game" ? "Přidáno do seznamu hraní 🎮" : "Přidáno do watchlistu 🔖", "success");
+            }
+          }
+          updateWatchlistBtn(btn, icon, textEl, isBookmarked, labels);
+        } catch {
+          showToast("Nepodařilo se aktualizovat watchlist", "danger");
+        }
+      });
+    }
+
+    function updateWatchlistBtn(btn, icon, textEl, isBookmarked, labels = {}) {
+      const addLabel   = labels.add   || "🔖 Do watchlistu";
+      const addedLabel = labels.added || "📌 Ve watchlistu";
+      if (isBookmarked) {
+        icon.className         = "bi bi-check-circle-fill me-1";
+        textEl.textContent     = addedLabel;
+        btn.style.background   = "rgba(59,130,246,0.2)";
+        btn.style.borderColor  = "rgba(59,130,246,0.5)";
+        btn.style.color        = "#93c5fd";
+      } else {
+        icon.className         = "bi bi-bookmark me-1";
+        textEl.textContent     = addLabel;
+        btn.style.background   = "";
+        btn.style.borderColor  = "";
+        btn.style.color        = "";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

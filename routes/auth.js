@@ -5,20 +5,23 @@
 const express = require("express");
 const router  = express.Router();
 const { v4: uuidv4 } = require("uuid");
-const db = require("../helpers/db");
+const crypto  = require("crypto");
+const db      = require("../helpers/db");
 
-// Statický admin token (pro zpětnou kompatibilitu s admin.html)
 const ADMIN_TOKEN = "supersecret-admin-token-2024";
+
+function sha256(str) {
+  return crypto.createHash("sha256").update(String(str)).digest("hex");
+}
 
 // ── POST /api/auth/register ───────────────────────────────────
 // Tělo: { username, email, password, gender }
-// Pole odpovídají PHP projektu (signup.php + user.class.php)
 router.post("/register", (req, res) => {
   const { username, email, password, gender } = req.body;
 
   const errors = [];
   if (!username || username.trim().length < 3)
-    errors.push("Username musí mít aspoň 3 znaky a obsahovat jen písmena");
+    errors.push("Username musí mít aspoň 3 znaky");
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     errors.push("Zadej platný e-mail");
   if (!password || password.length < 4)
@@ -26,78 +29,77 @@ router.post("/register", (req, res) => {
   if (!gender || !["Male", "Female"].includes(gender))
     errors.push("Vyber pohlaví");
 
-  if (errors.length > 0) {
-    return res.status(400).json({ errors });
-  }
+  if (errors.length > 0) return res.status(400).json({ errors });
 
   const data = db.read();
 
-  if (data.users.find(u => u.username === username.trim())) {
+  if (data.users.find(u => u.username.toLowerCase() === username.trim().toLowerCase())) {
     return res.status(409).json({ errors: ["Uživatelské jméno je již obsazené"] });
   }
-  if (data.users.find(u => u.email === email.toLowerCase())) {
+
+  const emailHash = sha256(email.toLowerCase());
+  if (data.users.find(u => (u.emailHash || sha256(u.email || "")) === emailHash)) {
     return res.status(409).json({ errors: ["E-mail je již registrován"] });
   }
 
   const newUser = {
-    id:        uuidv4(),
-    username:  username.trim(),
-    email:     email.toLowerCase(),
-    password,
+    id:          uuidv4(),
+    username:    username.trim(),
+    emailHash,               // SHA-256 pro porovnávání, nikdy nereversibilní
+    passwordHash: sha256(password),
     gender,
-    role:      "user",
-    createdAt: new Date().toISOString()
+    role:        "user",
+    createdAt:   new Date().toISOString()
   };
 
   data.users.push(newUser);
   db.write(data);
 
   const token = `user-token-${newUser.id}`;
-  res.status(201).json({
-    message:  "Registrace úspěšná",
-    token,
-    username: newUser.username,
-    role:     newUser.role
-  });
+  res.status(201).json({ message: "Registrace úspěšná", token, username: newUser.username, role: newUser.role });
 });
 
 // ── POST /api/auth/login ──────────────────────────────────────
-// Tělo: { username, password }
-// Funguje pro admina i pro běžné uživatele
+// Tělo: { username, password }  (username = username nebo e-mail)
 router.post("/login", (req, res) => {
   const { username, password } = req.body;
-
-  // Pevný admin (pro semestrálku OK)
-  if (username === "admin" && password === "admin123") {
-    return res.json({
-      token:    ADMIN_TOKEN,
-      username: "admin",
-      role:     "admin",
-      message:  "Přihlášení úspěšné"
-    });
+  if (!username || !password) {
+    return res.status(400).json({ error: "Zadej přihlašovací jméno a heslo" });
   }
 
-  // Hledáme uživatele v databázi – login přes e-mail (jako PHP projekt)
+  // Pevný admin
+  if (username === "admin" && password === "admin123") {
+    return res.json({ token: ADMIN_TOKEN, username: "admin", role: "admin", message: "Přihlášení úspěšné" });
+  }
+
   const data = db.read();
-  const user = data.users.find(
-    u => u.email === username.toLowerCase() && u.password === password
-  );
+  const input = username.trim().toLowerCase();
+  const emailHash = sha256(input);
+  const passHash  = sha256(password);
+
+  const user = data.users.find(u => {
+    const usernameMatch = u.username.toLowerCase() === input;
+    const emailMatch    = u.emailHash
+      ? u.emailHash === emailHash
+      : (u.email || "").toLowerCase() === input; // zpětná kompatibilita starých záznamů
+
+    if (!usernameMatch && !emailMatch) return false;
+
+    // Ověř heslo – nové hashované nebo staré plaintext (zpětná kompatibilita)
+    return u.passwordHash
+      ? u.passwordHash === passHash
+      : u.password === password;
+  });
 
   if (!user) {
     return res.status(401).json({ error: "Nesprávné přihlašovací údaje" });
   }
 
   const token = `user-token-${user.id}`;
-  res.json({
-    token,
-    username: user.username,
-    role:     user.role,
-    message:  "Přihlášení úspěšné"
-  });
+  res.json({ token, username: user.username, role: user.role, message: "Přihlášení úspěšné" });
 });
 
 // ── GET /api/auth/me ──────────────────────────────────────────
-// Vrátí info o přihlášeném uživateli (ověření tokenu)
 router.get("/me", (req, res) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -105,52 +107,28 @@ router.get("/me", (req, res) => {
   }
 
   const token = authHeader.split(" ")[1];
+  if (token === ADMIN_TOKEN) return res.json({ username: "admin", role: "admin" });
 
-  // Pevný admin token
-  if (token === ADMIN_TOKEN) {
-    return res.json({ username: "admin", role: "admin" });
-  }
-
-  // Uživatelský token má tvar "user-token-<uuid>"
   const data = db.read();
   const user = data.users.find(u => `user-token-${u.id}` === token);
-
-  if (!user) {
-    return res.status(401).json({ error: "Neplatný token" });
-  }
+  if (!user) return res.status(401).json({ error: "Neplatný token" });
 
   res.json({ username: user.username, role: user.role });
 });
 
-// ── Middleware: requireAdmin ──────────────────────────────────
-// Použij v route souborech pro ochranu admin endpointů:
-//   const { requireAdmin } = require("./auth");
-//   router.delete("/:id", requireAdmin, handler);
+// ── Middleware ─────────────────────────────────────────────────
 function requireAdmin(req, res, next) {
   const authHeader = req.headers["authorization"];
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Chybí autorizační token" });
-  }
-
-  const token = authHeader.split(" ")[1];
-  if (token !== ADMIN_TOKEN) {
-    return res.status(403).json({ error: "Přístup odepřen – pouze admin" });
-  }
-
+  if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Chybí autorizační token" });
+  if (authHeader.split(" ")[1] !== ADMIN_TOKEN) return res.status(403).json({ error: "Přístup odepřen – pouze admin" });
   next();
 }
 
-// ── Middleware: requireLogin ──────────────────────────────────
-// Použij pro endpointy, které potřebují přihlášeného uživatele (admin i user):
-//   router.post("/reviews", requireLogin, handler);
 function requireLogin(req, res, next) {
   const authHeader = req.headers["authorization"];
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Musíš být přihlášen" });
-  }
+  if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ error: "Musíš být přihlášen" });
 
   const token = authHeader.split(" ")[1];
-
   if (token === ADMIN_TOKEN) {
     req.user = { username: "admin", role: "admin" };
     return next();
@@ -158,10 +136,7 @@ function requireLogin(req, res, next) {
 
   const data = db.read();
   const user = data.users.find(u => `user-token-${u.id}` === token);
-
-  if (!user) {
-    return res.status(401).json({ error: "Neplatný token" });
-  }
+  if (!user) return res.status(401).json({ error: "Neplatný token" });
 
   req.user = { username: user.username, role: user.role, id: user.id };
   next();

@@ -2,21 +2,58 @@
    public/css/style.css  –  Vlastní styly nad Bootstrap
    ============================================================ */
 
-/* Globální písmo */
-body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+/* ── CSS proměnné – světlé téma (default) ────────────────── */
+:root {
+  --bg-body:      #f8f9fa;
+  --bg-card:      #ffffff;
+  --text-primary: #212529;
+  --text-muted:   #6c757d;
+  --border-color: #dee2e6;
+  --card-shadow:  0 2px 8px rgba(0,0,0,.08);
+  --chart-text:   #495057;
 }
 
-/* Karty – jemný hover efekt */
+/* ── Tmavé téma ──────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg-body:      #0d1117;
+  --bg-card:      #161b22;
+  --text-primary: #e6edf3;
+  --text-muted:   #8b949e;
+  --border-color: #30363d;
+  --card-shadow:  0 2px 8px rgba(0,0,0,.4);
+  --chart-text:   #9ca3af;
+}
+
+/* ── Základní tělo ────────────────────────────────────────── */
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Karty ────────────────────────────────────────────────── */
 .card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
 }
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Tier badge – výraznější border */
+/* Karty v tmavém tématu */
+[data-theme="dark"] .card {
+  background-color: #161b22 !important;
+  border-color: #30363d !important;
+}
+[data-theme="dark"] .card .text-muted {
+  color: #8b949e !important;
+}
+
+/* Badge */
 .badge {
   font-size: 0.75rem;
   letter-spacing: 0.03em;
@@ -32,7 +69,7 @@ main {
   padding-bottom: 4rem;
 }
 
-/* ── Stats sekce ─────────────────────────────────────────── */
+/* ── Stats sekce (vždy tmavá) ─────────────────────────────── */
 .stat-card {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.08);
@@ -56,4 +93,123 @@ main {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   height: 100%;
+}
+
+/* ── Téma toggle tlačítko ──────────────────────────────────── */
+.theme-toggle {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.85);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0 8px;
+  white-space: nowrap;
+}
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.6);
+  color: #fff;
+}
+
+/* ── Záložková tlačítka (bookmark) ────────────────────────── */
+.bookmark-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.55);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  z-index: 2;
+}
+.card:hover .bookmark-btn,
+.bookmark-btn.bookmarked {
+  opacity: 1;
+}
+.bookmark-btn.bookmarked {
+  background: rgba(59,130,246,0.75);
+  color: #fff;
+}
+.bookmark-btn:hover {
+  background: rgba(59,130,246,0.9);
+}
+
+/* ── Stránkování ──────────────────────────────────────────── */
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+  padding-bottom: 1rem;
+}
+
+.page-btn {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  padding: 0 8px;
+}
+.page-btn:hover:not(.ellipsis):not(.active) {
+  background: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+}
+.page-btn.active {
+  background: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+  font-weight: 700;
+  cursor: default;
+}
+.page-btn.ellipsis {
+  cursor: default;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+/* ── Světlé téma – specifické opravy ─────────────────────── */
+[data-theme="light"] body {
+  background-color: #f8f9fa;
+}
+[data-theme="light"] .navbar {
+  /* Navbar zůstane tmavý vždy */
+}
+[data-theme="light"] main {
+  background-color: transparent;
+}
+[data-theme="light"] .text-muted {
+  color: #6c757d !important;
+}
+
+/* Světlé téma – karty v gridu */
+[data-theme="light"] #mediaGrid .card-title {
+  color: #212529 !important;
+}
+[data-theme="light"] #mediaGrid .card-text {
+  color: #495057 !important;
 }

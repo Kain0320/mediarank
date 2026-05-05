@@ -24,8 +24,8 @@
 
         <form id="loginForm">
           <div class="mb-3">
-            <label for="email" class="form-label">E-mail</label>
-            <input type="text" class="form-control" id="email" placeholder="vas@email.cz" required />
+            <label for="email" class="form-label">Uživatelské jméno nebo e-mail</label>
+            <input type="text" class="form-control" id="email" placeholder="jméno nebo vas@email.cz" required autocomplete="username" />
           </div>
           <div class="mb-4">
             <label for="password" class="form-label">Heslo</label>
@@ -38,9 +38,8 @@
           </button>
         </form>
 
-        <!-- Rychlý přístup pro admina (jen pro vývoj) -->
         <div class="mt-3 text-center small text-muted">
-          Admin: zadej <code>admin</code> jako e-mail a <code>admin123</code> jako heslo
+          Admin: jméno <code>admin</code>, heslo <code>admin123</code>
         </div>
 
         <hr class="my-3" />

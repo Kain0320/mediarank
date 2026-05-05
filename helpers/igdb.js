@@ -94,4 +94,58 @@ async function searchGames(query, limit = 6) {
   }));
 }
 
-module.exports = { searchGames };
+/**
+ * Načte detail hry z IGDB (screenshoty, vývojáři, platformy, atd.)
+ * @param {number} igdbId – IGDB ID hry
+ */
+async function getGameDetails(igdbId) {
+  const token = await getAccessToken();
+
+  const body = `
+    fields name, summary, storyline,
+           screenshots.image_id,
+           involved_companies.company.name, involved_companies.developer, involved_companies.publisher,
+           platforms.name,
+           game_modes.name,
+           websites.url, websites.category,
+           rating;
+    where id = ${igdbId};
+    limit 1;
+  `;
+
+  const res = await fetch(`${IGDB_URL}/games`, {
+    method:  "POST",
+    headers: {
+      "Client-ID":     process.env.TWITCH_CLIENT_ID,
+      "Authorization": `Bearer ${token}`,
+      "Content-Type":  "text/plain"
+    },
+    body
+  });
+
+  if (!res.ok) throw new Error(`IGDB detail error: ${res.status}`);
+
+  const games = await res.json();
+  if (!games.length) throw new Error("Game not found");
+  const g = games[0];
+
+  const screenshots = (g.screenshots || []).slice(0, 8).map(s =>
+    `https://images.igdb.com/igdb/image/upload/t_screenshot_big/${s.image_id}.jpg`
+  );
+
+  const companies   = g.involved_companies || [];
+  const developers  = companies.filter(c => c.developer).map(c => c.company?.name).filter(Boolean);
+  const publishers  = companies.filter(c => c.publisher).map(c => c.company?.name).filter(Boolean);
+
+  // Web – kategorie 1 = official
+  const website = (g.websites || []).find(w => w.category === 1)?.url || null;
+
+  const platforms  = (g.platforms  || []).map(p => p.name);
+  const gameModes  = (g.game_modes || []).map(m => m.name);
+  const criticScore = g.rating ? Math.round(g.rating) / 10 : null;
+  const storyline  = g.storyline || null;
+
+  return { screenshots, developers, publishers, platforms, gameModes, website, criticScore, storyline };
+}
+
+module.exports = { searchGames, getGameDetails };

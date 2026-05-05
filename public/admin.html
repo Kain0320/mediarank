@@ -12,12 +12,12 @@
       cursor: pointer;
       transition: background .15s;
     }
-    .search-result-card:hover { background: #f0f4ff; }
+    .search-result-card:hover { background: #fbfcff; }
     .search-result-img {
       width: 48px; height: 64px;
       object-fit: cover;
       border-radius: 4px;
-      background: #eee;
+      background: #555050;
       flex-shrink: 0;
     }
     .search-result-img-placeholder {
@@ -26,6 +26,38 @@
       background: #e9ecef;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.4rem; flex-shrink: 0;
+    }
+    th[data-sort] { user-select: none; }
+
+    /* Thead — pevné tmavé pozadí (Bootstrap používá --bs-table-bg + box-shadow) */
+    #adminTable thead tr > th {
+      --bs-table-bg: #212529 !important;
+      --bs-table-accent-bg: transparent !important;
+      background-color: #212529 !important;
+      color: #fff !important;
+      transition: background-color 0.18s ease;
+    }
+    /* Hover: mírně světlejší tmavá, text bílý */
+    #adminTable thead tr:hover > th {
+      --bs-table-bg: #2c3237 !important;
+      background-color: #2c3237 !important;
+      color: #fff !important;
+    }
+
+    /* Tbody row hover — jemný indigo glow místo bílého zbarvení */
+    #adminTable {
+      --bs-table-hover-bg: rgba(99, 102, 241, 0.09);
+      --bs-table-hover-color: currentColor;
+    }
+    #adminTable tbody tr {
+      transition: background-color 0.15s ease;
+    }
+    #adminTable tbody tr:hover > td {
+      border-left-color: transparent;
+    }
+    /* Levý accent pruh u hoveru */
+    #adminTable tbody tr:hover > td:first-child {
+      box-shadow: inset 3px 0 0 rgba(99, 102, 241, 0.6);
     }
   </style>
 </head>
@@ -65,11 +97,18 @@
     </nav>
 
     <main class="container my-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">Správa media položek</h1>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h1 class="h3 mb-0">Správa media položek</h1>
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">
           <i class="bi bi-plus-lg"></i> Přidat položku
         </button>
+      </div>
+
+      <!-- Vyhledávání + stats -->
+      <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <small class="text-muted" id="tableStats"></small>
+        <input type="text" class="form-control form-control-sm" id="tableSearch"
+          placeholder="Filtrovat podle názvu, žánru nebo typu…" style="max-width:320px;" />
       </div>
 
       <div class="card shadow-sm">
@@ -77,8 +116,16 @@
           <table class="table table-hover mb-0" id="adminTable">
             <thead class="table-dark">
               <tr>
-                <th>Název</th><th>Typ</th><th>Žánr</th>
-                <th>Skóre</th><th>Tier</th><th>Akce</th>
+                <th style="width:36px;">
+                  <input type="checkbox" class="form-check-input" id="selectAllChk" title="Vybrat vše" />
+                </th>
+                <th data-sort="title" data-sort-label="Název">Název</th>
+                <th data-sort="type"  data-sort-label="Typ">Typ</th>
+                <th data-sort="genre" data-sort-label="Žánr">Žánr</th>
+                <th data-sort="overallScore" data-sort-label="Skóre">Skóre</th>
+                <th data-sort="overallTier"  data-sort-label="Tier">Tier</th>
+                <th>Recenze</th>
+                <th class="text-end">Akce</th>
               </tr>
             </thead>
             <tbody id="adminTableBody"></tbody>
@@ -86,40 +133,46 @@
         </div>
       </div>
     </main>
+
+    <!-- ── Bulk action bar (fixed bottom) ───────────────────── -->
+    <div id="bulkBar" class="d-none position-fixed bottom-0 start-0 end-0 bg-dark text-white py-2 px-4 d-flex align-items-center gap-3 shadow-lg" style="z-index:1000;">
+      <span id="bulkCount" class="fw-bold"></span>
+      <button class="btn btn-danger btn-sm" id="bulkDeleteBtn">
+        <i class="bi bi-trash"></i> Smazat vybrané
+      </button>
+      <button class="btn btn-outline-light btn-sm" id="clearSelectionBtn">
+        Zrušit výběr
+      </button>
+    </div>
+
   </div>
 
   <!-- ── Modal: přidání položky ───────────────────────────── -->
   <div class="modal fade" id="addModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-
         <div class="modal-header">
           <h5 class="modal-title">Přidat media položku</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-
         <div class="modal-body">
 
-          <!-- ── Tab přepínač ─────────────────────────────── -->
+          <!-- Tab přepínač -->
           <ul class="nav nav-tabs mb-3" id="addTabs">
             <li class="nav-item">
-              <button class="nav-link active" data-tab="search">
-                🔍 Hledat v databázi
-              </button>
+              <button class="nav-link active" data-tab="search">🔍 Hledat v databázi</button>
             </li>
             <li class="nav-item">
-              <button class="nav-link" data-tab="manual">
-                ✏️ Zadat ručně
-              </button>
+              <button class="nav-link" data-tab="manual">✏️ Zadat ručně</button>
             </li>
           </ul>
 
-          <!-- ── TAB 1: Vyhledávání IGDB / TMDB ──────────── -->
+          <!-- TAB 1: Vyhledávání -->
           <div id="tabSearch">
             <div class="row g-2 mb-3">
               <div class="col-5">
                 <input type="text" class="form-control" id="searchQuery"
-                  placeholder="Název hry, filmu nebo seriálu..." />
+                  placeholder="Název hry, filmu nebo seriálu…" />
               </div>
               <div class="col-4">
                 <select class="form-select" id="searchType">
@@ -134,13 +187,11 @@
                 </button>
               </div>
             </div>
-
-            <!-- Výsledky -->
             <div id="searchStatus" class="text-muted small mb-2 d-none"></div>
             <div id="searchResults" class="border rounded" style="max-height:340px; overflow-y:auto;"></div>
           </div>
 
-          <!-- ── TAB 2: Ruční zadání ───────────────────────── -->
+          <!-- TAB 2: Ruční zadání -->
           <div id="tabManual" class="d-none">
             <div class="mb-3">
               <label class="form-label">Název *</label>
@@ -157,18 +208,154 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Žánr</label>
-              <input type="text" class="form-control" id="addGenre" placeholder="např. Action, RPG, Drama..." />
+              <input type="text" class="form-control" id="addGenre" placeholder="např. Action, RPG, Drama…" />
             </div>
             <div class="mb-3">
               <label class="form-label">URL obrázku</label>
-              <input type="url" class="form-control" id="addImageUrl" placeholder="https://..." />
+              <input type="url" class="form-control" id="addImageUrl" placeholder="https://…" />
             </div>
             <button class="btn btn-success w-100" id="addSubmitBtn">
               <i class="bi bi-plus-lg"></i> Přidat ručně
             </button>
           </div>
 
-        </div><!-- /modal-body -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: úprava položky ────────────────────────────── -->
+  <div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Upravit položku</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editId" />
+          <div class="mb-3">
+            <label class="form-label">Název *</label>
+            <input type="text" class="form-control" id="editTitle" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Typ *</label>
+            <select class="form-select" id="editType">
+              <option value="Movie">🎬 Film</option>
+              <option value="Series">📺 Seriál</option>
+              <option value="Game">🎮 Hra</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Žánr</label>
+            <input type="text" class="form-control" id="editGenre" placeholder="např. Action, RPG, Drama…" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">URL obrázku</label>
+            <input type="url" class="form-control" id="editImageUrl" placeholder="https://…" />
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-4">
+              <label class="form-label">Rok vydání</label>
+              <input type="number" class="form-control" id="editYear" placeholder="např. 2024" />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Popis (summary)</label>
+            <textarea class="form-control" id="editSummary" rows="3" placeholder="Stručný popis…"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
+          <button type="button" class="btn btn-primary" id="editSaveBtn">
+            <i class="bi bi-save"></i> Uložit změny
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: náhled před importem ─────────────────────── -->
+  <div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Náhled před importem</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning d-none" id="previewDupWarning">
+            <i class="bi bi-exclamation-triangle"></i>
+            Tato položka již může být v databázi (stejné ID).
+          </div>
+          <div class="d-flex gap-3 mb-3">
+            <div id="previewPoster"></div>
+            <div>
+              <h5 class="mb-1" id="previewTitle"></h5>
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                <span class="badge bg-secondary" id="previewType"></span>
+                <span class="badge bg-dark border" id="previewYear"></span>
+                <span class="badge bg-primary" id="previewRating"></span>
+              </div>
+              <div class="text-muted small" id="previewGenre"></div>
+            </div>
+          </div>
+          <hr />
+          <p class="text-muted small" id="previewSummary" style="max-height:160px;overflow-y:auto;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
+          <button type="button" class="btn btn-success" id="previewImportBtn" data-bs-dismiss="modal">
+            <i class="bi bi-download"></i> Importovat
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: správa epizod seriálu ────────────────────── -->
+  <div class="modal fade" id="episodesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Epizody: <span id="episodesModalTitle"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Přidat epizodu -->
+          <div class="card mb-3">
+            <div class="card-body">
+              <h6 class="card-title mb-3">Přidat hodnocení epizody</h6>
+              <div class="row g-2 align-items-end">
+                <div class="col-2">
+                  <label class="form-label small">Sezóna *</label>
+                  <input type="number" class="form-control form-control-sm" id="epSeason" min="1" value="1" />
+                </div>
+                <div class="col-2">
+                  <label class="form-label small">Epizoda *</label>
+                  <input type="number" class="form-control form-control-sm" id="epNumber" min="1" value="1" />
+                </div>
+                <div class="col-2">
+                  <label class="form-label small">Hodnocení *</label>
+                  <input type="number" class="form-control form-control-sm" id="epRating" min="1" max="10" step="0.1" placeholder="1–10" />
+                </div>
+                <div class="col-4">
+                  <label class="form-label small">Název epizody</label>
+                  <input type="text" class="form-control form-control-sm" id="epTitle" placeholder="volitelné" />
+                </div>
+                <div class="col-2">
+                  <button class="btn btn-success btn-sm w-100" id="epAddBtn">
+                    <i class="bi bi-plus-lg"></i> Přidat
+                  </button>
+                </div>
+              </div>
+              <div id="epError" class="text-danger small mt-2 d-none"></div>
+            </div>
+          </div>
+
+          <!-- Seznam epizod -->
+          <div id="episodesList"></div>
+        </div>
       </div>
     </div>
   </div>
